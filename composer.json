@@ -1,0 +1,10 @@
+{
+    "name": "digitaltalent/monitoring-microskill",
+    "description": "Sistem Monitoring Penyelesaian Microskill Peserta Digital Talent",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "phpoffice/phpspreadsheet": "^5.9",
+        "dompdf/dompdf": "^3.1"
+    }
+}
