@@ -89,6 +89,7 @@ class ComposerStaticInitcb2dbf519d57f217a82f92abaf589c7c
         '356736db98a6834f0a886b8d509b0ecd' => __DIR__ . '/..' . '/thecodingmachine/safe/generated/zlib.php',
         '0174385c3be07e86008907d06ee66531' => __DIR__ . '/..' . '/sabberworm/php-css-parser/src/Rule/Rule.php',
         '98aea6e41b9cb79b379b10f37ba1f0b7' => __DIR__ . '/..' . '/sabberworm/php-css-parser/src/RuleSet/RuleContainer.php',
+        '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -170,6 +171,16 @@ class ComposerStaticInitcb2dbf519d57f217a82f92abaf589c7c
         'Complex\\' =>
         array (
             0 => __DIR__ . '/..' . '/markbaker/complex/classes/src',
+        ),
+    );
+
+    public static $prefixesPsr0 = array (
+        'H' =>
+        array (
+            'HTMLPurifier' =>
+            array (
+                0 => __DIR__ . '/..' . '/ezyang/htmlpurifier/library',
+            ),
         ),
     );
 
@@ -266,6 +277,7 @@ class ComposerStaticInitcb2dbf519d57f217a82f92abaf589c7c
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitcb2dbf519d57f217a82f92abaf589c7c::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitcb2dbf519d57f217a82f92abaf589c7c::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitcb2dbf519d57f217a82f92abaf589c7c::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitcb2dbf519d57f217a82f92abaf589c7c::$classMap;
 
         }, null, ClassLoader::class);
