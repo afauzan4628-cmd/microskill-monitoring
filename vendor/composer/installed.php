@@ -3,7 +3,7 @@
         'name' => 'digitaltalent/monitoring-microskill',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'dd5ea337fc0e1b77c214395ac6a4df0d111c23a0',
+        'reference' => '8500c401b18c7c4704291436d8e0297df0457e52',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'digitaltalent/monitoring-microskill' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'dd5ea337fc0e1b77c214395ac6a4df0d111c23a0',
+            'reference' => '8500c401b18c7c4704291436d8e0297df0457e52',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

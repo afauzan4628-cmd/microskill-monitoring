@@ -4,6 +4,8 @@
  * Sesuaikan DB_USER / DB_PASS kalau MySQL kamu pakai password
  */
 
+
+
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'db_microskill');
 define('DB_USER', 'root');
