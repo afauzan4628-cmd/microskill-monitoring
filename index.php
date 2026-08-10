@@ -1,4 +1,7 @@
 <?php
+require_once 'config.php';
+
+
 /**
  * Landing Page - Monitoring Microskill Digital Talent
 
@@ -96,6 +99,8 @@ $displayProgress = $dbConnected && $totalPendaftar > 0 ? $progress : 78.0;
       </nav>
 
       <div class="nav-actions">
+        <a href="login.php">Login</a>
+        <a href="register.php" class="btn-nav btn-secondary-glow">Register</a>
         <a href="dashboard.php" class="btn-nav btn-primary-glow">
           <span>Buka Dashboard</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>

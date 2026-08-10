@@ -20,13 +20,21 @@ $current = basename($_SERVER['PHP_SELF']);
       <span class="brand-text">Monitoring<br>Microskill</span>
     </div>
     <nav class="menu">
-      <a href="index.php" class="<?= $current=='index.php' ? 'active' : '' ?>">🏠 Halaman Utama</a>
-      <a href="dashboard.php" class="<?= $current=='dashboard.php' ? 'active' : '' ?>">📊 Dashboard</a>
-      <a href="import_monitoring.php" class="<?= in_array($current, ['import_monitoring.php','preview_monitoring.php','proses_import_monitoring.php']) ? 'active' : '' ?>">⬆️ Import Data</a>
-      <a href="monitoring.php" class="<?= $current=='monitoring.php' ? 'active' : '' ?>">🧭 Monitoring</a>
-      <a href="responses.php" class="<?= $current=='responses.php' ? 'active' : '' ?>">✅ Responses</a>
-      <a href="pendaftar.php" class="<?= $current=='pendaftar.php' ? 'active' : '' ?>">👥 Pendaftar</a>
-      <a href="laporan.php" class="<?= $current=='laporan.php' ? 'active' : '' ?>">📄 Laporan</a>
+<?php if (isLoggedIn()): ?>
+        <a href="dashboard.php" class="<?= $current=='dashboard.php' ? 'active' : '' ?>">📊 Dashboard</a>
+        <a href="monitoring.php" class="<?= $current=='monitoring.php' ? 'active' : '' ?>">🧭 Monitoring peserta</a>
+        <a href="responses.php" class="<?= $current=='responses.php' ? 'active' : '' ?>">✅ Responses</a>
+        <a href="import_monitoring.php" class="<?= in_array($current, ['import_monitoring.php','preview_monitoring.php','proses_import_monitoring.php']) ? 'active' : '' ?>">⬆️ Import Data</a>
+        <a href="export.php" class="<?= $current=='export.php' ? 'active' : '' ?>">📤 Export laporan</a>
+        <?php if (isAdmin()): ?>
+            <a href="manage_users.php" class="<?= $current=='manage_users.php' ? 'active' : '' ?>">👥 Tambah/Edit/Hapus user</a>
+            <a href="change_role.php" class="<?= $current=='change_role.php' ? 'active' : '' ?>">🔑 Ubah role user</a>
+            <a href="activity_log.php" class="<?= $current=='activity_log.php' ? 'active' : '' ?>">📜 Lihat log aktivitas</a>
+            <a href="settings.php" class="<?= $current=='settings.php' ? 'active' : '' ?>">⚙️ Pengaturan sistem</a>
+        <?php endif; ?>
+    <?php else: ?>
+        <a href="register.php" class="<?= $current=='register.php' ? 'active' : '' ?>">🛡️ Register</a>
+    <?php endif; ?>
     </nav>
   </aside>
 
