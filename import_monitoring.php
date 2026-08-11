@@ -1,4 +1,6 @@
 <?php
+require_once 'config.php';
+requireRoles(['admin','operator']);
 require 'config/database.php';
 require 'includes/functions.php';
 $page_title = 'Import Data';

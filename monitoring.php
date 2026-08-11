@@ -1,17 +1,18 @@
 <?php
+require_once 'config.php';
+requireRoles(['admin','operator']);
 require 'config/database.php';
 require 'includes/functions.php';
 $page_title = 'Monitoring';
 
 $search   = trim($_GET['search'] ?? '');
-$status   = trim($_GET['status'] ?? '');   // '', 'sudah', 'belum'
+$status   = trim($_GET['status'] ?? '');
 $instansi = trim($_GET['instansi'] ?? '');
 
 $perPage = 15;
 $page    = max(1, (int)($_GET['page'] ?? 1));
 $offset  = ($page - 1) * $perPage;
 
-// Query dasar: LEFT JOIN pendaftar dengan responses berdasarkan email
 $baseSql = "
     FROM tb_pendaftar p
     LEFT JOIN tb_responses r
@@ -38,13 +39,11 @@ if ($status === 'sudah') {
     $baseSql .= " AND r.id IS NULL";
 }
 
-// Total data untuk pagination
 $countStmt = $pdo->prepare("SELECT COUNT(*) $baseSql");
 $countStmt->execute($params);
 $totalRows  = $countStmt->fetchColumn();
 $totalPages = max(1, ceil($totalRows / $perPage));
 
-// Data halaman ini
 $sql = "
     SELECT p.id, p.nama_lengkap, p.nip, p.email_user, p.instansi_pemerintahan, p.jabatan,
            r.id AS response_id, r.tema_microskill, r.tanggal_penyelesaian, r.keterangan, r.sertifikat
@@ -56,7 +55,6 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $rows = $stmt->fetchAll();
 
-// Daftar instansi buat dropdown filter
 $instansiList = $pdo->query("SELECT DISTINCT instansi_pemerintahan FROM tb_pendaftar WHERE instansi_pemerintahan IS NOT NULL AND instansi_pemerintahan != '' ORDER BY instansi_pemerintahan")->fetchAll(PDO::FETCH_COLUMN);
 
 $queryStringBase = 'monitoring.php?' . http_build_query([

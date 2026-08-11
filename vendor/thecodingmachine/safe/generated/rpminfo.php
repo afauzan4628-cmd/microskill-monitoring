@@ -1,20 +1,34 @@
 <?php
 
-if (str_starts_with(PHP_VERSION, "8.1.")) {
-    require_once __DIR__ . '/8.1/rpminfo.php';
+namespace Safe;
+
+use Safe\Exceptions\RpminfoException;
+
+/**
+ * @param int $tag
+ * @throws RpminfoException
+ *
+ */
+function rpmaddtag(int $tag): void
+{
+    error_clear_last();
+    $safeResult = \rpmaddtag($tag);
+    if ($safeResult === false) {
+        throw RpminfoException::createFromPhpError();
+    }
 }
-if (str_starts_with(PHP_VERSION, "8.2.")) {
-    require_once __DIR__ . '/8.1/rpminfo.php';
-}
-if (str_starts_with(PHP_VERSION, "8.3.")) {
-    require_once __DIR__ . '/8.1/rpminfo.php';
-}
-if (str_starts_with(PHP_VERSION, "8.4.")) {
-    require_once __DIR__ . '/8.1/rpminfo.php';
-}
-if (str_starts_with(PHP_VERSION, "8.5.")) {
-    require_once __DIR__ . '/8.5/rpminfo.php';
-}
-if (str_starts_with(PHP_VERSION, "8.6.")) {
-    require_once __DIR__ . '/8.5/rpminfo.php';
+
+
+/**
+ * @param string $text
+ * @throws RpminfoException
+ *
+ */
+function rpmdefine(string $text): void
+{
+    error_clear_last();
+    $safeResult = \rpmdefine($text);
+    if ($safeResult === false) {
+        throw RpminfoException::createFromPhpError();
+    }
 }

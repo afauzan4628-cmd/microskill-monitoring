@@ -5,13 +5,10 @@ require 'config/database.php';
 require 'includes/functions.php';
 $page_title = 'Dashboard';
 
-// Total pendaftar
 $totalPendaftar = $pdo->query("SELECT COUNT(*) FROM tb_pendaftar")->fetchColumn();
 
-// Total responses
 $totalResponses = $pdo->query("SELECT COUNT(*) FROM tb_responses")->fetchColumn();
 
-// Sudah menyelesaikan = pendaftar yang emailnya ada di tb_responses
 $sudah = $pdo->query("
     SELECT COUNT(DISTINCT p.id)
     FROM tb_pendaftar p
@@ -21,7 +18,6 @@ $sudah = $pdo->query("
 $belum = max(0, $totalPendaftar - $sudah);
 $progress = $totalPendaftar > 0 ? round(($sudah / $totalPendaftar) * 100, 1) : 0;
 
-// Import terakhir
 $lastImport = $pdo->query("SELECT * FROM tb_import_log ORDER BY created_at DESC LIMIT 1")->fetch();
 
 require 'includes/header.php';

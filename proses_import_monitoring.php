@@ -1,4 +1,6 @@
 <?php
+require_once 'config.php';
+requireRoles(['admin','operator']);
 require 'config/database.php';
 require 'includes/functions.php';
 require 'vendor/autoload.php';
@@ -27,9 +29,6 @@ try {
     exit;
 }
 
-/**
- * Ambil nilai cell, otomatis convert ke tanggal (Y-m-d) kalau cellnya bertipe tanggal.
- */
 function cellValue(Cell $cell, $asDate = false) {
     $value = $cell->getValue();
     if ($value === null) return null;
@@ -43,7 +42,7 @@ function cellValue(Cell $cell, $asDate = false) {
                 return trim((string)$value);
             }
         }
-        // sudah berupa teks tanggal
+
         $ts = strtotime((string)$value);
         return $ts ? date('Y-m-d H:i:s', $ts) : trim((string)$value);
     }
@@ -51,15 +50,10 @@ function cellValue(Cell $cell, $asDate = false) {
     return is_string($value) ? trim($value) : trim((string)$value);
 }
 
-/**
- * Baca semua baris data (mulai baris 2) dari sebuah sheet, menggunakan
- * peta kolom hasil mapHeaderColumns() -- BUKAN posisi kolom tetap.
- * Return array of ['fieldKey' => Cell, ...] per baris (baris kosong dilewati).
- */
 function readRowsByHeader($sheet, array $colMap) {
     $rows       = [];
     $highestRow = $sheet->getHighestRow();
-    for ($r = 2; $r <= $highestRow; $r++) { // baris 1 = header
+    for ($r = 2; $r <= $highestRow; $r++) {
         $rowData = [];
         $isEmpty = true;
         foreach ($colMap as $fieldKey => $colIndex) {
@@ -77,7 +71,6 @@ function readRowsByHeader($sheet, array $colMap) {
 $sheetPendaftar = $spreadsheet->getSheetByName('PENDAFTAR');
 $sheetResponses = $spreadsheet->getSheetByName('RESPONSES');
 
-// --- Validasi & pemetaan header (bukan asumsi posisi kolom tetap) ---
 try {
     $pendaftarColMap = mapHeaderColumns($sheetPendaftar, pendaftarExpectedColumns(), 'PENDAFTAR');
     $responsesColMap = mapHeaderColumns($sheetResponses, responsesExpectedColumns(), 'RESPONSES');
@@ -92,11 +85,7 @@ $responsesRows = readRowsByHeader($sheetResponses, $responsesColMap);
 
 $pdo->beginTransaction();
 try {
-    // ---------- Upsert tb_pendaftar (berdasarkan email_user) ----------
-    // Kalau email_user sudah pernah ada di database, data lama di-UPDATE
-    // (bukan insert baru) supaya file revisi/duplikat tidak bikin data dobel.
-    // Baris tanpa email (kosong) selalu di-insert sebagai baris baru karena
-    // tidak ada kunci unik untuk mencocokkannya.
+
     $stmtP = $pdo->prepare("
         INSERT INTO tb_pendaftar
         (id_batch, nama_lengkap, nip, jenis_kelamin, usia, jenjang_pendidikan, provinsi,
@@ -146,9 +135,6 @@ try {
         $countPendaftar++;
     }
 
-    // ---------- Upsert tb_responses (berdasarkan email_peserta + tema) ----------
-    // Satu peserta bisa punya beberapa baris response (tema microskill berbeda),
-    // jadi kunci pencocokan duplikat adalah kombinasi email + tema, bukan email saja.
     $stmtR = $pdo->prepare("
         INSERT INTO tb_responses
         (submit_form, nama_peserta, email_peserta, asal_instansi, tema_microskill,
@@ -183,7 +169,6 @@ try {
         $countResponses++;
     }
 
-    // ---------- Log import ----------
     $stmtLog = $pdo->prepare("
         INSERT INTO tb_import_log (batch_import, nama_file, total_pendaftar, total_responses)
         VALUES (?,?,?,?)

@@ -1,11 +1,6 @@
 <?php
 require_once 'config.php';
 
-
-/**
- * Landing Page - Monitoring Microskill Digital Talent
-
-*/
 $dbConnected = false;
 $totalPendaftar = 0;
 $totalResponses = 0;
@@ -15,22 +10,18 @@ $progress = 0;
 $lastImportName = '-';
 $lastImportDate = '-';
 
-// Coba koneksi database secara fleksibel & aman (tanpa crash jika DB belum siap)
 try {
     if (file_exists(__DIR__ . '/config/database.php')) {
         @include_once __DIR__ . '/config/database.php';
         if (isset($pdo) && $pdo instanceof PDO) {
             $dbConnected = true;
-            
-            // Total Pendaftar
+
             $stmtP = $pdo->query("SELECT COUNT(*) FROM tb_pendaftar");
             $totalPendaftar = (int) $stmtP->fetchColumn();
-            
-            // Total Responses
+
             $stmtR = $pdo->query("SELECT COUNT(*) FROM tb_responses");
             $totalResponses = (int) $stmtR->fetchColumn();
 
-            // Sudah Selesai
             $stmtS = $pdo->query("
                 SELECT COUNT(DISTINCT p.id)
                 FROM tb_pendaftar p
@@ -41,7 +32,6 @@ try {
             $belum = max(0, $totalPendaftar - $sudah);
             $progress = $totalPendaftar > 0 ? round(($sudah / $totalPendaftar) * 100, 1) : 0;
 
-            // Import Terakhir
             $stmtL = $pdo->query("SELECT * FROM tb_import_log ORDER BY created_at DESC LIMIT 1");
             $lastImport = $stmtL->fetch();
             if ($lastImport) {
@@ -51,19 +41,15 @@ try {
         }
     }
 } catch (Exception $e) {
-    // Fallback jika database belum disetup
+
     $dbConnected = false;
 }
 
-// Data Dummy Fallback jika database belum terisi untuk keperluan showcase visual
 $displayTotalPendaftar = $dbConnected && $totalPendaftar > 0 ? $totalPendaftar : 1250;
 $displayTotalResponses = $dbConnected && $totalResponses > 0 ? $totalResponses : 980;
 $displaySudah = $dbConnected && $sudah > 0 ? $sudah : 975;
 $displayBelum = $dbConnected && $totalPendaftar > 0 ? $belum : 275;
 $displayProgress = $dbConnected && $totalPendaftar > 0 ? $progress : 78.0;
-
-
-
 
 ?>
 <!DOCTYPE html>
@@ -73,7 +59,7 @@ $displayProgress = $dbConnected && $totalPendaftar > 0 ? $progress : 78.0;
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MicroSkill Monitoring - Sistem Monitoring Penyelesaian Peserta Digital Talent</title>
   <meta name="description" content="Platform modern untuk mentor memantau penyelesaian microskill peserta Digital Talent secara otomatis, akurat, dan real-time.">
-  
+
   <!-- CSS Utama Landing Page -->
   <link rel="stylesheet" href="assets/css/landing.css">
 </head>
@@ -99,12 +85,20 @@ $displayProgress = $dbConnected && $totalPendaftar > 0 ? $progress : 78.0;
       </nav>
 
       <div class="nav-actions">
-        <a href="login.php">Login</a>
-        <a href="register.php" class="btn-nav btn-secondary-glow">Register</a>
-        <a href="dashboard.php" class="btn-nav btn-primary-glow">
-          <span>Buka Dashboard</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-        </a>
+        <?php if (isLoggedIn()): ?>
+          <div class="nav-user-chip">
+            <span class="nav-user-avatar"><?= strtoupper(substr($_SESSION['username'], 0, 1)) ?></span>
+            <span class="nav-user-name"><?= htmlspecialchars($_SESSION['username'], ENT_QUOTES, 'UTF-8') ?></span>
+          </div>
+          <a href="dashboard.php" class="btn-nav btn-primary-glow">
+            <span>Buka Dashboard</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          </a>
+          <a href="logout.php" class="btn-nav btn-outline-dark">Logout</a>
+        <?php else: ?>
+          <a href="login.php">Login</a>
+          <a href="register.php" class="btn-nav btn-secondary-glow">Register</a>
+        <?php endif; ?>
         <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle Menu">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
@@ -615,9 +609,9 @@ $displayProgress = $dbConnected && $totalPendaftar > 0 ? $progress : 78.0;
     function toggleFaq(element) {
       const item = element.parentElement;
       const isActive = item.classList.contains('active');
-      
+
       document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('active'));
-      
+
       if (!isActive) {
         item.classList.add('active');
       }
@@ -637,7 +631,7 @@ $displayProgress = $dbConnected && $totalPendaftar > 0 ? $progress : 78.0;
     function renderDemoTable() {
       const tbody = document.getElementById('demoTableBody');
       const searchQuery = document.getElementById('demoSearchInput').value.toLowerCase();
-      
+
       const filtered = demoData.filter(item => {
         const matchesFilter = currentFilter === 'all' || item.status === currentFilter;
         const matchesSearch = item.nama.toLowerCase().includes(searchQuery) || item.email.toLowerCase().includes(searchQuery);

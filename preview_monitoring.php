@@ -1,4 +1,6 @@
 <?php
+require_once 'config.php';
+requireRoles(['admin','operator']);
 require 'config/database.php';
 require 'includes/functions.php';
 require 'vendor/autoload.php';
@@ -24,7 +26,6 @@ if (!in_array($ext, $allowedExt)) {
     exit;
 }
 
-// Simpan file ke folder uploads dengan nama unik
 $newName  = 'import_' . date('YmdHis') . '_' . uniqid() . '.' . $ext;
 $destPath = __DIR__ . '/uploads/' . $newName;
 
@@ -34,7 +35,6 @@ if (!move_uploaded_file($file['tmp_name'], $destPath)) {
     exit;
 }
 
-// Baca file excel
 try {
     $spreadsheet = IOFactory::load($destPath);
 } catch (Exception $e) {
@@ -61,9 +61,6 @@ if (!$hasResponses || !$hasPendaftar) {
     exit;
 }
 
-// Validasi kolom wajib berdasarkan NAMA HEADER (bukan posisi kolom).
-// Kalau ada kolom yang hilang/berganti nama, gagalnya di sini -- sebelum
-// data sempat masuk ke database.
 try {
     $pendaftarColMap = mapHeaderColumns($spreadsheet->getSheetByName('PENDAFTAR'), pendaftarExpectedColumns(), 'PENDAFTAR');
     $responsesColMap = mapHeaderColumns($spreadsheet->getSheetByName('RESPONSES'), responsesExpectedColumns(), 'RESPONSES');
@@ -74,8 +71,6 @@ try {
     exit;
 }
 
-// Ambil data mentah tiap sheet untuk ditampilkan di preview, dibaca lewat
-// peta kolom (header) supaya urutan kolom di file mentor tidak berpengaruh.
 function readSheetRowsByHeader($spreadsheet, $sheetName, array $colMap) {
     $sheet = $spreadsheet->getSheetByName($sheetName);
     $highestRow = $sheet->getHighestRow();
@@ -97,7 +92,6 @@ function readSheetRowsByHeader($spreadsheet, $sheetName, array $colMap) {
 $responsesRows  = readSheetRowsByHeader($spreadsheet, 'RESPONSES', $responsesColMap);
 $pendaftarRows  = readSheetRowsByHeader($spreadsheet, 'PENDAFTAR', $pendaftarColMap);
 
-// simpan path file & nama asli di session buat dipakai proses_import
 $_SESSION['import_file_path'] = $destPath;
 $_SESSION['import_file_name'] = $file['name'];
 

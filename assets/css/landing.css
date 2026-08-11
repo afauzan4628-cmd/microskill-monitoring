@@ -188,6 +188,38 @@ h1, h2, h3, h4, h5, h6 {
   gap: 16px;
 }
 
+.nav-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark-main);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-dark);
+  padding: 6px 18px 6px 6px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+.nav-user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.nav-user-name {
+  font-size: 14px;
+}
+
 .btn-nav {
   padding: 10px 22px;
   border-radius: 99px;

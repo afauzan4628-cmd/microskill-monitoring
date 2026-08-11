@@ -1,46 +1,78 @@
 <?php
 
-namespace PhpOffice\PhpSpreadsheet\Worksheet;
+namespace PhpOffice\PhpSpreadsheet\Worksheet\Table;
+
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Table;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class Column
 {
     /**
-     * \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet.
-     *
-     * @var Worksheet
-     */
-    private $worksheet;
-
-    /**
-     * Column index.
+     * Table Column Index.
      *
      * @var string
      */
-    private $columnIndex;
+    private $columnIndex = '';
 
     /**
-     * Create a new column.
+     * Show Filter Button.
      *
-     * @param string $columnIndex
+     * @var bool
      */
-    public function __construct(Worksheet $worksheet, $columnIndex = 'A')
+    private $showFilterButton = true;
+
+    /**
+     * Total Row Label.
+     *
+     * @var string
+     */
+    private $totalsRowLabel;
+
+    /**
+     * Total Row Function.
+     *
+     * @var string
+     */
+    private $totalsRowFunction;
+
+    /**
+     * Total Row Formula.
+     *
+     * @var string
+     */
+    private $totalsRowFormula;
+
+    /**
+     * Column Formula.
+     *
+     * @var string
+     */
+    private $columnFormula;
+
+    /**
+     * Table.
+     *
+     * @var null|Table
+     */
+    private $table;
+
+    /**
+     * Create a new Column.
+     *
+     * @param string $column Column (e.g. A)
+     * @param Table $table Table for this column
+     */
+    public function __construct($column, ?Table $table = null)
     {
-        // Set parent and column index
-        $this->worksheet = $worksheet;
-        $this->columnIndex = $columnIndex;
+        $this->columnIndex = $column;
+        $this->table = $table;
     }
 
     /**
-     * Destructor.
-     */
-    public function __destruct()
-    {
-        // @phpstan-ignore-next-line
-        $this->worksheet = null;
-    }
-
-    /**
-     * Get column index as string eg: 'A'.
+     * Get Table column index as string eg: 'A'.
      */
     public function getColumnIndex(): string
     {
@@ -48,74 +80,175 @@ class Column
     }
 
     /**
-     * Get cell iterator.
+     * Set Table column index as string eg: 'A'.
      *
-     * @param int $startRow The row number at which to start iterating
-     * @param int $endRow Optionally, the row number at which to stop iterating
+     * @param string $column Column (e.g. A)
      */
-    public function getCellIterator($startRow = 1, $endRow = null): ColumnCellIterator
+    public function setColumnIndex($column): self
     {
-        return new ColumnCellIterator($this->worksheet, $this->columnIndex, $startRow, $endRow);
-    }
-
-    /**
-     * Get row iterator. Synonym for getCellIterator().
-     *
-     * @param int $startRow The row number at which to start iterating
-     * @param int $endRow Optionally, the row number at which to stop iterating
-     */
-    public function getRowIterator($startRow = 1, $endRow = null): ColumnCellIterator
-    {
-        return $this->getCellIterator($startRow, $endRow);
-    }
-
-    /**
-     * Returns a boolean true if the column contains no cells. By default, this means that no cell records exist in the
-     *         collection for this column. false will be returned otherwise.
-     *     This rule can be modified by passing a $definitionOfEmptyFlags value:
-     *          1 - CellIterator::TREAT_NULL_VALUE_AS_EMPTY_CELL If the only cells in the collection are null value
-     *                  cells, then the column will be considered empty.
-     *          2 - CellIterator::TREAT_EMPTY_STRING_AS_EMPTY_CELL If the only cells in the collection are empty
-     *                  string value cells, then the column will be considered empty.
-     *          3 - CellIterator::TREAT_NULL_VALUE_AS_EMPTY_CELL | CellIterator::TREAT_EMPTY_STRING_AS_EMPTY_CELL
-     *                  If the only cells in the collection are null value or empty string value cells, then the column
-     *                  will be considered empty.
-     *
-     * @param int $definitionOfEmptyFlags
-     *              Possible Flag Values are:
-     *                  CellIterator::TREAT_NULL_VALUE_AS_EMPTY_CELL
-     *                  CellIterator::TREAT_EMPTY_STRING_AS_EMPTY_CELL
-     * @param int $startRow The row number at which to start checking if cells are empty
-     * @param int $endRow Optionally, the row number at which to stop checking if cells are empty
-     */
-    public function isEmpty(int $definitionOfEmptyFlags = 0, $startRow = 1, $endRow = null): bool
-    {
-        $nullValueCellIsEmpty = (bool) ($definitionOfEmptyFlags & CellIterator::TREAT_NULL_VALUE_AS_EMPTY_CELL);
-        $emptyStringCellIsEmpty = (bool) ($definitionOfEmptyFlags & CellIterator::TREAT_EMPTY_STRING_AS_EMPTY_CELL);
-
-        $cellIterator = $this->getCellIterator($startRow, $endRow);
-        $cellIterator->setIterateOnlyExistingCells(true);
-        foreach ($cellIterator as $cell) {
-            /** @scrutinizer ignore-call */
-            $value = $cell->getValue();
-            if ($value === null && $nullValueCellIsEmpty === true) {
-                continue;
-            }
-            if ($value === '' && $emptyStringCellIsEmpty === true) {
-                continue;
-            }
-
-            return false;
+        // Uppercase coordinate
+        $column = strtoupper($column);
+        if ($this->table !== null) {
+            $this->table->isColumnInRange($column);
         }
 
-        return true;
+        $this->columnIndex = $column;
+
+        return $this;
     }
 
     /**
-     * Returns bound worksheet.
+     * Get show Filter Button.
      */
-    public function getWorksheet(): Worksheet
+    public function getShowFilterButton(): bool
     {
-        return $this->worksheet;
+        return $this->showFilterButton;
+    }
+
+    /**
+     * Set show Filter Button.
+     */
+    public function setShowFilterButton(bool $showFilterButton): self
+    {
+        $this->showFilterButton = $showFilterButton;
+
+        return $this;
+    }
+
+    /**
+     * Get total Row Label.
+     */
+    public function getTotalsRowLabel(): ?string
+    {
+        return $this->totalsRowLabel;
+    }
+
+    /**
+     * Set total Row Label.
+     */
+    public function setTotalsRowLabel(string $totalsRowLabel): self
+    {
+        $this->totalsRowLabel = $totalsRowLabel;
+
+        return $this;
+    }
+
+    /**
+     * Get total Row Function.
+     */
+    public function getTotalsRowFunction(): ?string
+    {
+        return $this->totalsRowFunction;
+    }
+
+    /**
+     * Set total Row Function.
+     */
+    public function setTotalsRowFunction(string $totalsRowFunction): self
+    {
+        $this->totalsRowFunction = $totalsRowFunction;
+
+        return $this;
+    }
+
+    /**
+     * Get total Row Formula.
+     */
+    public function getTotalsRowFormula(): ?string
+    {
+        return $this->totalsRowFormula;
+    }
+
+    /**
+     * Set total Row Formula.
+     */
+    public function setTotalsRowFormula(string $totalsRowFormula): self
+    {
+        $this->totalsRowFormula = $totalsRowFormula;
+
+        return $this;
+    }
+
+    /**
+     * Get column Formula.
+     */
+    public function getColumnFormula(): ?string
+    {
+        return $this->columnFormula;
+    }
+
+    /**
+     * Set column Formula.
+     */
+    public function setColumnFormula(string $columnFormula): self
+    {
+        $this->columnFormula = $columnFormula;
+
+        return $this;
+    }
+
+    /**
+     * Get this Column's Table.
+     */
+    public function getTable(): ?Table
+    {
+        return $this->table;
+    }
+
+    /**
+     * Set this Column's Table.
+     */
+    public function setTable(?Table $table = null): self
+    {
+        $this->table = $table;
+
+        return $this;
+    }
+
+    public static function updateStructuredReferences(?Worksheet $workSheet, ?string $oldTitle, ?string $newTitle): void
+    {
+        if ($workSheet === null || $oldTitle === null || $oldTitle === '' || $newTitle === null) {
+            return;
+        }
+
+        // Remember that table headings are case-insensitive
+        if (StringHelper::strToLower($oldTitle) !== StringHelper::strToLower($newTitle)) {
+            // We need to check all formula cells that might contain Structured References that refer
+            //    to this column, and update those formulae to reference the new column text
+            $spreadsheet = $workSheet->getParentOrThrow();
+            foreach ($spreadsheet->getWorksheetIterator() as $sheet) {
+                self::updateStructuredReferencesInCells($sheet, $oldTitle, $newTitle);
+            }
+            self::updateStructuredReferencesInNamedFormulae($spreadsheet, $oldTitle, $newTitle);
+        }
+    }
+
+    private static function updateStructuredReferencesInCells(Worksheet $worksheet, string $oldTitle, string $newTitle): void
+    {
+        $pattern = '/\[(@?)' . preg_quote($oldTitle, '/') . '\]/mui';
+
+        foreach ($worksheet->getCoordinates(false) as $coordinate) {
+            $cell = $worksheet->getCell($coordinate);
+            if ($cell->getDataType() === DataType::TYPE_FORMULA) {
+                $formula = $cell->getValue();
+                if (preg_match($pattern, $formula) === 1) {
+                    $formula = preg_replace($pattern, "[$1{$newTitle}]", $formula);
+                    $cell->setValueExplicit($formula, DataType::TYPE_FORMULA);
+                }
+            }
+        }
+    }
+
+    private static function updateStructuredReferencesInNamedFormulae(Spreadsheet $spreadsheet, string $oldTitle, string $newTitle): void
+    {
+        $pattern = '/\[(@?)' . preg_quote($oldTitle, '/') . '\]/mui';
+
+        foreach ($spreadsheet->getNamedFormulae() as $namedFormula) {
+            $formula = $namedFormula->getValue();
+            if (preg_match($pattern, $formula) === 1) {
+                $formula = preg_replace($pattern, "[$1{$newTitle}]", $formula);
+                $namedFormula->setValue($formula); // @phpstan-ignore-line
+            }
+        }
     }
 }
