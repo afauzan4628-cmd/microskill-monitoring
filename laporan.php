@@ -1,4 +1,6 @@
 <?php
+require_once 'config.php';
+requireRoles(['admin','operator']);
 require 'config/database.php';
 require 'includes/functions.php';
 $page_title = 'Laporan';
@@ -14,7 +16,6 @@ $sudah = $pdo->query("
 $belum    = max(0, $totalPendaftar - $sudah);
 $progress = $totalPendaftar > 0 ? round(($sudah / $totalPendaftar) * 100, 1) : 0;
 
-// Top 5 instansi dengan penyelesaian terbanyak
 $topInstansi = $pdo->query("
     SELECT p.instansi_pemerintahan AS instansi, COUNT(DISTINCT p.id) AS jumlah
     FROM tb_pendaftar p
@@ -25,7 +26,6 @@ $topInstansi = $pdo->query("
     LIMIT 5
 ")->fetchAll();
 
-// Top 5 tema microskill terpopuler
 $topTema = $pdo->query("
     SELECT tema_microskill AS tema, COUNT(*) AS jumlah
     FROM tb_responses
@@ -35,7 +35,6 @@ $topTema = $pdo->query("
     LIMIT 5
 ")->fetchAll();
 
-// Daftar peserta yang belum menyelesaikan (maks 50 ditampilkan di layar, PDF full)
 $belumList = $pdo->query("
     SELECT p.nama_lengkap, p.nip, p.email_user, p.instansi_pemerintahan
     FROM tb_pendaftar p

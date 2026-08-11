@@ -75,3 +75,20 @@ CREATE TABLE tb_import_log (
     total_responses INT DEFAULT 0,
     created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------
+-- Tabel: akun login (admin / operator) untuk login.php & register.php
+-- CATATAN: sengaja pakai CREATE TABLE IF NOT EXISTS (bukan DROP+CREATE
+-- seperti tabel di atas), supaya kalau schema.sql ini di-import ulang,
+-- akun yang sudah terdaftar TIDAK ikut terhapus.
+-- ---------------------------------------------------------
+CREATE TABLE IF NOT EXISTS users (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    nama          VARCHAR(100) NOT NULL,
+    username      VARCHAR(50)  NOT NULL UNIQUE,
+    email         VARCHAR(100) NOT NULL UNIQUE,
+    password      VARCHAR(255) NOT NULL,
+    role          ENUM('admin','operator','user') NOT NULL DEFAULT 'user',
+    status        ENUM('active','inactive') NOT NULL DEFAULT 'active',
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;

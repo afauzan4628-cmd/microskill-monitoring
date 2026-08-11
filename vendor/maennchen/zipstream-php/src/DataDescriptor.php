@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ZipStream;
+namespace ZipStream\Zip64;
+
+use ZipStream\PackField;
 
 /**
  * @internal
@@ -19,8 +21,8 @@ abstract class DataDescriptor
         return PackField::pack(
             new PackField(format: 'V', value: self::SIGNATURE),
             new PackField(format: 'V', value: $crc32UncompressedData),
-            new PackField(format: 'V', value: $compressedSize),
-            new PackField(format: 'V', value: $uncompressedSize),
+            new PackField(format: 'P', value: $compressedSize),
+            new PackField(format: 'P', value: $uncompressedSize),
         );
     }
 }

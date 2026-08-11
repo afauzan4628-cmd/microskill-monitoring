@@ -1,10 +1,7 @@
 <?php
-// config.php - Central configuration for the Microskill Monitoring application
-// Database connection (MySQL/MariaDB) using PDO
-// Adjust credentials as needed for your environment
 
 $DB_HOST = 'localhost';
-$DB_NAME = 'microskill_monitoring';
+$DB_NAME = 'db_microskill';
 $DB_USER = 'root';
 $DB_PASS = '';
 
@@ -14,12 +11,10 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
 } catch (PDOException $e) {
-    // In a demo environment we can continue without DB (fallback mode)
     $pdo = null;
     error_log('Database connection failed: ' . $e->getMessage());
 }
 
-// Use strict session settings for better security
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_strict_mode', 1);
 if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
@@ -33,9 +28,7 @@ session_set_cookie_params([
     'httponly' => true,
     'samesite' => 'Lax',
 ]);
-// Start a secure session for authentication
 session_start();
-// Authentication helper functions
 function isLoggedIn(): bool {
     return isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true;
 }
@@ -54,12 +47,43 @@ function requireAdmin(): void {
         exit;
     }
 }
-// Require user to have one of the allowed roles
 function requireRoles(array $allowedRoles) {
     requireLogin();
     if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles)) {
         echo '<script>alert("Akses ditolak: role tidak diizinkan!"); window.location.href="login.php";</script>';
         exit;
     }
+}
+
+function generateCsrfToken(): string {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+function csrfField(): string {
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') . '">';
+}
+function verifyCsrfToken($token): bool {
+    return isset($_SESSION['csrf_token']) && is_string($token) && hash_equals($_SESSION['csrf_token'], $token);
+}
+
+function tooManyLoginAttempts(int $maxAttempts = 5, int $windowSeconds = 300): bool {
+    $attempts = $_SESSION['login_attempts'] ?? [];
+    $attempts = array_filter($attempts, fn($t) => $t > time() - $windowSeconds);
+    $_SESSION['login_attempts'] = array_values($attempts);
+    return count($_SESSION['login_attempts']) >= $maxAttempts;
+}
+function recordFailedLoginAttempt(): void {
+    $_SESSION['login_attempts'][] = time();
+}
+function clearLoginAttempts(): void {
+    unset($_SESSION['login_attempts']);
+}
+function secondsUntilLoginRetry(int $windowSeconds = 300): int {
+    if (empty($_SESSION['login_attempts'])) return 0;
+    $oldest = min($_SESSION['login_attempts']);
+    $remaining = $windowSeconds - (time() - $oldest);
+    return max(0, $remaining);
 }
 ?>

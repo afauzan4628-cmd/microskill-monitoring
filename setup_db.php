@@ -1,8 +1,6 @@
 <?php
-// setup_db.php – run once to create the database and required tables
-// Adjust credentials if needed (host, db name, user, password)
 $DB_HOST = 'localhost';
-$DB_NAME = 'microskill_monitoring';
+$DB_NAME = 'db_microskill';
 $DB_USER = 'root';
 $DB_PASS = '';
 
@@ -11,27 +9,26 @@ try {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
-    // Create database if it doesn't exist
     $pdo->exec("CREATE DATABASE IF NOT EXISTS `$DB_NAME` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     $pdo->exec("USE `$DB_NAME`");
 
-    // Create users table
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        nama VARCHAR(100) NOT NULL,
         username VARCHAR(50) NOT NULL UNIQUE,
         email VARCHAR(100) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
         role ENUM('admin','operator','user') NOT NULL DEFAULT 'user',
+        status ENUM('active','inactive') NOT NULL DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;");
 
-    // Insert a default admin user (username: admin, password: admin123)
     $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE username = ?');
     $stmt->execute(['admin']);
     if ($stmt->fetchColumn() == 0) {
         $hash = password_hash('admin123', PASSWORD_DEFAULT);
-        $pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (?,?,?,?)')
-            ->execute(['admin', 'admin@example.com', $hash, 'admin']);
+        $pdo->prepare('INSERT INTO users (nama, username, email, password, role, status) VALUES (?,?,?,?,?,?)')
+            ->execute(['Administrator', 'admin', 'admin@example.com', $hash, 'admin', 'active']);
         echo "Default admin user created (admin / admin123).\n";
     } else {
         echo "Admin user already exists.\n";

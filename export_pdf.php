@@ -1,4 +1,6 @@
 <?php
+require_once 'config.php';
+requireRoles(['admin','operator']);
 require 'config/database.php';
 require 'includes/functions.php';
 require 'vendor/autoload.php';
@@ -6,7 +8,6 @@ require 'vendor/autoload.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-// ---- Ambil data ringkasan ----
 $totalPendaftar = $pdo->query("SELECT COUNT(*) FROM tb_pendaftar")->fetchColumn();
 $totalResponses = $pdo->query("SELECT COUNT(*) FROM tb_responses")->fetchColumn();
 
@@ -18,7 +19,6 @@ $sudah = $pdo->query("
 $belum    = max(0, $totalPendaftar - $sudah);
 $progress = $totalPendaftar > 0 ? round(($sudah / $totalPendaftar) * 100, 1) : 0;
 
-// ---- Rekap per OPD/Instansi: Total, Sudah, Belum, Progress (bukan cuma "jumlah selesai") ----
 $rekapInstansi = $pdo->query("
     SELECT
         p.instansi_pemerintahan AS instansi,
@@ -31,14 +31,12 @@ $rekapInstansi = $pdo->query("
     ORDER BY total DESC
 ")->fetchAll();
 
-// Hitung belum & progress per baris rekap (dihitung di PHP supaya query tetap sederhana)
 foreach ($rekapInstansi as &$row) {
     $row['belum']    = max(0, $row['total'] - $row['sudah']);
     $row['progress'] = $row['total'] > 0 ? round(($row['sudah'] / $row['total']) * 100, 2) : 0;
 }
 unset($row);
 
-// OPD dengan jumlah penyelesaian (bukan total peserta) terbanyak -- untuk kesimpulan
 $opdTerbanyakSelesai = null;
 if (!empty($rekapInstansi)) {
     $sortedBySelesai = $rekapInstansi;
@@ -53,8 +51,6 @@ $topTema = $pdo->query("
     GROUP BY tema_microskill ORDER BY jumlah DESC LIMIT 5
 ")->fetchAll();
 
-// Daftar peserta belum menyelesaikan -- dibatasi 50 baris pertama supaya PDF
-// tidak jadi puluhan halaman. Daftar lengkap tetap ada di menu Monitoring.
 $BATAS_BELUM_DI_PDF = 50;
 $belumList = $pdo->query("
     SELECT p.nama_lengkap, p.nip, p.email_user, p.instansi_pemerintahan
@@ -65,7 +61,6 @@ $belumList = $pdo->query("
     LIMIT $BATAS_BELUM_DI_PDF
 ")->fetchAll();
 
-// ---- Narasi ringkasan (paragraf otomatis) ----
 $narasi = sprintf(
     'Berdasarkan hasil monitoring, terdapat %s peserta yang terdaftar. Sebanyak %s peserta (%s%%) telah menyelesaikan Microskill, sedangkan %s peserta belum menyelesaikan. %s',
     number_format($totalPendaftar, 0, ',', '.'),
@@ -77,7 +72,6 @@ $narasi = sprintf(
         : 'Data ini menunjukkan bahwa tingkat penyelesaian masih di bawah separuh peserta, sehingga diperlukan tindak lanjut lebih lanjut agar target penyelesaian tercapai.'
 );
 
-// ---- Susun HTML untuk PDF ----
 ob_start();
 ?>
 <html>
@@ -179,7 +173,6 @@ ob_start();
 <?php
 $html = ob_get_clean();
 
-// ---- Generate PDF ----
 $options = new Options();
 $options->set('isRemoteEnabled', true);
 $options->set('defaultFont', 'DejaVu Sans');
